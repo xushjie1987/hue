@@ -104,6 +104,8 @@ def guess_format(request):
           storage[delim['data_type']] = delim['comment']
     if table_metadata.details['properties']['format'] == 'text':
       format_ = {"quoteChar": "\"", "recordSeparator": '\\n', "type": "csv", "hasHeader": False, "fieldSeparator": storage.get('field.delim', ',')}
+      print 'aaaaa'
+      print format_
     elif table_metadata.details['properties']['format'] == 'parquet':
       format_ = {"type": "parquet", "hasHeader": False,}
     else:
@@ -214,7 +216,7 @@ def _create_index(user, fs, client, source, destination, index_name):
   df = destination['indexerPrimaryKey'] and destination['indexerPrimaryKey'][0] or None
   kwargs = {}
 
-  if source['inputFormat'] != 'manual':
+  if source['inputFormat'] not in ('manual', 'table'):
     stats = fs.stats(source["path"])
     if stats.size > MAX_UPLOAD_SIZE:
       raise PopupException(_('File size is too large to handle!'))
@@ -248,7 +250,7 @@ def _create_index(user, fs, client, source, destination, index_name):
         replication=destination['indexerReplicationFactor']
     )
 
-  if source['inputFormat'] != 'manual':
+  if source['inputFormat'] not in ('manual', 'table'):
     data = fs.read(source["path"], 0, MAX_UPLOAD_SIZE)
     client.index(name=index_name, data=data, **kwargs)
 
